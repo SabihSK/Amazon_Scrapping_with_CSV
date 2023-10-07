@@ -41,6 +41,30 @@ def get_price(soup):
     
     return product_actual_price
 
+def get_imgs(soup, product_title):
+    try:
+        Product_img = soup.find('img', {'alt': product_title})
+        if Product_img:
+            Prod_img = Product_img.get('src')
+            return Prod_img
+    except AttributeError:
+        print('This image could not be found')
+
+
+def get_Description(soup):
+    try:
+        Product_Des = soup.find('ul', class_ = 'a-unordered-list a-vertical a-spacing-mini' )
+        if Product_Des:
+            Product_Des = Product_Des.text.strip()
+        else:
+            Product_Des = ''
+    except AttributeError:
+        Product_Des = ''
+
+    return Product_Des
+    
+        
+
 
 # print(soup.prett:ify)
 links_lists = []
@@ -51,7 +75,7 @@ for links in links:
     links_lists.append(links.get('href'))
 
 
-dct = {'Title' : [] , 'Price' : []}
+dct = {'Title' : [] , 'Price' : [], 'Links': [], 'Product_Img': [], 'Product_Description': []}
 # print(links)
 for link in links_lists:
 
@@ -59,11 +83,14 @@ for link in links_lists:
     new_amzwebpage = requests.get(product_links, headers = Headers )
 
     new_soup = BeautifulSoup(new_amzwebpage.content,'html.parser' )
+    Product_title = get_title(new_soup)
 
 
     dct['Title'].append(get_title(new_soup))
     dct['Price'].append(get_price(new_soup))
-    
+    dct['Links'].append(product_links)
+    dct['Product_Img'].append(get_imgs(new_soup,Product_title))
+    dct['Product_Description'].append(get_Description(new_soup))
 
     amzdataframe = pd.DataFrame.from_dict(dct)
     amzdataframe['Title'].replace('', np.nan ,inplace = True)
@@ -80,3 +107,4 @@ for link in links_lists:
 # print(product_links)
 print(amzdataframe)
 print ('THIS PROGRAM IS RUNNING')
+
